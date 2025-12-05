@@ -6873,13 +6873,12 @@ function buildOptimisticEmptyReport(reportID: string, accountID: number, parentR
         managerID: getManagerAccountID(policy, {ownerAccountID: accountID}),
     };
 
+    const formula = titleReportField?.defaultValue ?? CONST.POLICY.DEFAULT_REPORT_NAME_PATTERN;
     const formulaContext = {
         report: optimisticEmptyReport,
         policy,
     };
-    const optimisticReportName = computeFormula(titleReportField?.defaultValue ?? CONST.POLICY.DEFAULT_REPORT_NAME_PATTERN, formulaContext) 
-        || titleReportField?.defaultValue 
-        || CONST.POLICY.DEFAULT_REPORT_NAME_PATTERN;
+    const optimisticReportName = computeFormula(formula, formulaContext) || formula;
     optimisticEmptyReport.reportName = optimisticReportName;
 
     optimisticEmptyReport.participants = accountID
