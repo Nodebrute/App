@@ -18,6 +18,7 @@ import useLocalize from '@hooks/useLocalize';
 import useNetwork from '@hooks/useNetwork';
 import useOnyx from '@hooks/useOnyx';
 import usePermissions from '@hooks/usePermissions';
+import usePreserveReimbursementAccountDraft from '@hooks/usePreserveReimbursementAccountDraft';
 import usePrevious from '@hooks/usePrevious';
 import useRootNavigationState from '@hooks/useRootNavigationState';
 import useThemeStyles from '@hooks/useThemeStyles';
@@ -49,6 +50,7 @@ import NAVIGATORS from '@src/NAVIGATORS';
 import ONYXKEYS from '@src/ONYXKEYS';
 import ROUTES from '@src/ROUTES';
 import type SCREENS from '@src/SCREENS';
+import type {ReimbursementAccountForm} from '@src/types/form';
 import type {InputID} from '@src/types/form/ReimbursementAccountForm';
 import INPUT_IDS from '@src/types/form/ReimbursementAccountForm';
 import type {ACHDataReimbursementAccount, ReimbursementAccountStep} from '@src/types/onyx/ReimbursementAccount';
@@ -153,6 +155,9 @@ function ReimbursementAccountPage({route, policy, isLoadingPolicy, navigation}: 
 
         updateReimbursementAccountDraft(achContractValuesRef.current);
     }, [reimbursementAccountDraft, currentStep]);
+
+    // Automatically preserve and restore draft when coming back online
+    usePreserveReimbursementAccountDraft(reimbursementAccount, reimbursementAccountDraft, currentStep);
 
     function getBankAccountFields(fieldNames: InputID[]): Partial<ACHDataReimbursementAccount> {
         return {
@@ -305,7 +310,7 @@ function ReimbursementAccountPage({route, policy, isLoadingPolicy, navigation}: 
             navigation.setParams({stepToOpen});
         },
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
-        [isOffline, reimbursementAccount, hasACHDataBeenLoaded, shouldShowContinueSetupButton, currentStep],
+        [isOffline, reimbursementAccount, reimbursementAccountDraft, hasACHDataBeenLoaded, shouldShowContinueSetupButton, currentStep],
     );
 
     const continueUSDVBBASetup = useCallback(() => {
