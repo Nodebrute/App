@@ -1,7 +1,7 @@
+import lodashPick from 'lodash/pick';
 import {useEffect, useRef} from 'react';
 import Onyx, {type Connection} from 'react-native-onyx';
 import type {OnyxEntry} from 'react-native-onyx';
-import lodashPick from 'lodash/pick';
 import useNetwork from '@hooks/useNetwork';
 import usePrevious from '@hooks/usePrevious';
 import getFieldsForStep from '@pages/ReimbursementAccount/USD/utils/getFieldsForStep';
@@ -39,7 +39,6 @@ function usePreserveReimbursementAccountDraft(
     const preservedDraftRef = useRef<PreservedDraft | null>(null);
     const connectionRef = useRef<Connection | null>(null);
 
-    // Helper function to disconnect Onyx connection
     const disconnectConnection = () => {
         if (connectionRef.current !== null) {
             Onyx.disconnect(connectionRef.current);
@@ -47,19 +46,14 @@ function usePreserveReimbursementAccountDraft(
         }
     };
 
-    // Helper function to clear preserved draft
     const clearPreservedDraft = () => {
         preservedDraftRef.current = null;
     };
-
-    // Set up Onyx connection to watch for draft being cleared
     useEffect(() => {
-        // Only watch if we have preserved draft data
         if (!preservedDraftRef.current) {
             return;
         }
 
-        // Connect to watch for draft changes
         const connection = Onyx.connectWithoutView({
             key: ONYXKEYS.FORMS.REIMBURSEMENT_ACCOUNT_FORM_DRAFT,
             callback: (draft) => {
@@ -80,17 +74,14 @@ function usePreserveReimbursementAccountDraft(
 
     // Preserve draft when coming back online
     useEffect(() => {
-        // Check if we're coming back online
         if (!prevIsOffline || isOffline || !prevReimbursementAccount) {
             return;
         }
 
-        // Only preserve if we have draft data and valid step
         if (!reimbursementAccountDraft || isEmptyObject(reimbursementAccountDraft) || !currentStep) {
             return;
         }
 
-        // Only preserve for steps that have fields defined
         if (currentStep !== CONST.BANK_ACCOUNT.STEP.BANK_ACCOUNT && currentStep !== CONST.BANK_ACCOUNT.STEP.COMPANY && currentStep !== CONST.BANK_ACCOUNT.STEP.REQUESTOR) {
             return;
         }
@@ -100,7 +91,6 @@ function usePreserveReimbursementAccountDraft(
             return;
         }
 
-        // Preserve only step-specific fields
         const stepFields = lodashPick(reimbursementAccountDraft, fieldsForStep);
         if (!isEmptyObject(stepFields)) {
             preservedDraftRef.current = {
@@ -111,17 +101,13 @@ function usePreserveReimbursementAccountDraft(
     }, [prevIsOffline, isOffline, reimbursementAccountDraft, currentStep, prevReimbursementAccount]);
 
     // Clear preserved draft when step changes
-    // This is necessary because:
-    // 1. If user navigates away from a step (back/forward), we shouldn't restore old preserved data when they return
-    // 2. If user presses Next and data is saved, we shouldn't restore stale preserved data even if draft isn't cleared yet
-    // 3. Prevents edge cases where user navigates away before backend clears the draft
+
     useEffect(() => {
         if (prevCurrentStep && prevCurrentStep !== currentStep && preservedDraftRef.current) {
             clearPreservedDraft();
         }
     }, [prevCurrentStep, currentStep]);
 
-    // Cleanup on unmount - connection cleanup is already handled by the connection useEffect cleanup
     useEffect(() => {
         return () => {
             disconnectConnection();
