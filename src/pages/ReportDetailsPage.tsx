@@ -726,21 +726,6 @@ function ReportDetailsPage({policy, report, route, reportMetadata}: ReportDetail
                     )}
                 </>
             )}
-            {!isEmptyObject(parentNavigationSubtitleData) && (isMoneyRequestReport || isInvoiceReport || isMoneyRequest || isTaskReport) && (
-                <View style={[styles.w100, styles.mt1, styles.alignItemsCenter]}>
-                    <View style={styles.mw100}>
-                        <ParentNavigationSubtitle
-                            parentNavigationSubtitleData={parentNavigationSubtitleData}
-                            reportID={report?.reportID}
-                            parentReportID={report?.parentReportID}
-                            parentReportActionID={report?.parentReportActionID}
-                            pressableStyles={[styles.mt1, styles.mw100]}
-                            textStyles={[styles.textAlignCenter]}
-                            subtitleNumberOfLines={2}
-                        />
-                    </View>
-                </View>
-            )}
         </View>
     );
 
@@ -788,6 +773,7 @@ function ReportDetailsPage({policy, report, route, reportMetadata}: ReportDetail
             parentReportActionID={report?.parentReportActionID}
             pressableStyles={[styles.mt1, styles.mw100]}
             subtitleNumberOfLines={2}
+            shouldHideFromText
         />
     );
 
@@ -816,10 +802,18 @@ function ReportDetailsPage({policy, report, route, reportMetadata}: ReportDetail
 
                         Navigation.navigate(ROUTES.EDIT_REPORT_FIELD_REQUEST.getRoute(report.reportID, policyID, titleField.fieldID, backTo));
                     }}
-                    furtherDetailsComponent={nameSectionFurtherDetailsContent}
                 />
             </View>
         </OfflineWithFeedback>
+    );
+
+    const nameSectionFromField = parentNavigationSubtitleData?.reportName && (
+        <MenuItemWithTopDescription
+            interactive={false}
+            titleComponent={nameSectionFurtherDetailsContent}
+            description={translate('threads.from')}
+            shouldCheckActionAllowedOnPress={false}
+        />
     );
 
     const deleteTransaction = useCallback(() => {
@@ -945,6 +939,8 @@ function ReportDetailsPage({policy, report, route, reportMetadata}: ReportDetail
                     </View>
 
                     {isExpenseReport && shouldShowTitleField && titleField && nameSectionTitleField}
+
+                    {(isExpenseReport || isTaskReport) && nameSectionFromField}
 
                     {!isExpenseReport && nameSectionGroupWorkspace}
 
